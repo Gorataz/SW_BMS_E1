@@ -38,6 +38,9 @@ typedef enum{
 	MODE_BATT1,
 	MODE_BATT2,
 }t_mode;
+
+extern TIM_HandleTypeDef htim6;
+
 /*
  * @brief: This function configure the switches to put
  * the two batteries in series. The information is sent

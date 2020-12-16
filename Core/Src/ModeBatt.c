@@ -1,5 +1,7 @@
 #include "ModeBatt.h"
 
+
+
 int ModeBatt_setMode(t_mode mode)
 {
 	int ret_val;
@@ -60,8 +62,10 @@ int ModeBatt_checkModeBattery(void)
 	 * Si on a dépassé le timer sans avoir un ACK : on renvoit un message d'erreur
 	 *
 	 */
+	HAL_TIM_Base_Start(&htim6); //normalement on écrit cette ligne dans le main puisqu'on ne l'écrit qu'une fois mais je savais pas où la mettre sinon
+	__HAL_TIM_SET_COUNTER(&htim6,0);  // set the counter value a 0
 	//wait for ACK or Timeout
-	while ((HAL_GPIO_ReadPin(GPIO_ACK,PIN_ACK)!=1)/*|| tim1.read != TIMEOUT*/) {}
+	while ((HAL_GPIO_ReadPin(GPIO_ACK,PIN_ACK)!=1)||__HAL_TIM_GET_COUNTER(&htim6)<TIMEOUT) {}  //TIMEOUT en ms
 
 			if (HAL_GPIO_ReadPin(GPIO_ACK,PIN_ACK)==1) {
 				return 1;

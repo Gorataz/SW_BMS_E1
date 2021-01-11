@@ -13,7 +13,7 @@
 static const float DeltaQ=0.00085;
 
 /***********************************
- *	BATTERY 1 & 2
+ *	BATTERY 1 (BATT1) & 2 (BATT2)
  **********************************/
 
 float InfoBatt_getCurrent(int nb_batt)

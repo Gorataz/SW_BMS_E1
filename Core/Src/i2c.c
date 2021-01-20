@@ -17,21 +17,18 @@
   ******************************************************************************
   */
 
+/*
+ * TO DO
+ * read_register w/ error management:     done
+ * write_register w/ error management:    done
+ * */
+
+
 /* Includes ------------------------------------------------------------------*/
 #include "i2c.h"
 
 /* USER CODE BEGIN 0 */
-static const uint8_t GAUGE_ADDR=0x64<<1;
-static const uint8_t CTRL_REG=0x01; //register B
-static const uint8_t AUTO_MODE=0xE8; //data + prescaler à 1024
-static const uint8_t SHUTDOWN=0xE9; //shutdown au registre B sans écraser
-static const uint8_t VOLT_REG=0x07;
-static const uint8_t AMP_REG=0x0D;
-static const uint8_t COUL_REG_MSB=0x02;
-static const uint8_t COUL_REG_LSB=0x03;
 
-#define BATT1 hi2c1
-#define BATT2 hi2c2
 /* USER CODE END 0 */
 
 I2C_HandleTypeDef hi2c1;
@@ -200,20 +197,30 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle)
 }
 
 /* USER CODE BEGIN 1 */
-uint16_t read_register(I2C_HandleTypeDef hi2c, uint8_t register_pointer)
+HAL_StatusTypeDef read_register(I2C_HandleTypeDef hi2c, uint8_t REG_MSB,uint16_t retVal)
 {
 	HAL_StatusTypeDef ret;
-	uint16_t return_value=0;
-	uint8_t msg[20];
-
-	ret=HAL_I2C_Mem_Read(&hi2c,(uint16_t)GAUGE_ADDR,(uint16_t)register_pointer,I2C_MEMADD_SIZE_8BIT,&return_value,2,HAL_MAX_DELAY);
+	uint16_t valueMSB,valueLSB;
+	ret=HAL_I2C_Mem_Read(&hi2c,(uint16_t)GAUGE_ADDR,(uint16_t)REG_MSB,I2C_MEMADD_SIZE_8BIT,&valueMSB,1,HAL_MAX_DELAY);
+	valueMSB=valueMSB<<8;
 	if (ret==HAL_OK)
 	{
-		return return_value;
+		ret=HAL_I2C_Mem_Read(&hi2c,(uint16_t)GAUGE_ADDR,(uint16_t)REG_MSB+1,I2C_MEMADD_SIZE_8BIT,&valueLSB,1,HAL_MAX_DELAY);
+		retVal=valueMSB+valueLSB; 			//We return the value through retVal while the function itself returns a HAL_... for the user to check any errors
 	}
-	else
-		return 0;
+	return ret;
+}										//Through the code's development, HAL_I2C_Mem_Read seemed to be the best - instead of HAL_I2C_Receive
+
+
+HAL_StatusTypeDef Write_Register(I2C_HandleTypeDef hi2c,uint8_t REG, uint8_t DATA)
+{
+	uint8_t data[2];
+	data[0]=REG;
+	data[1]=DATA;
+
+	return HAL_I2C_Master_Transmit(&hi2c,GAUGE_ADDR,data,2,HAL_MAX_DELAY);
+
 }
 /* USER CODE END 1 */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+/************************ (C) COPYRIGHT GEI Corp *****END OF FILE****/
